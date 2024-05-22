@@ -25,11 +25,7 @@ const[loading , setloading]=useState(false)
 
 
   const fetchFiles = async () => {
-     console.log('Bucket:', S3_BUCKET);
-  console.log('Region:', REGION);
-  console.log('Access Key ID:', process.env.REACT_APP_ACCESS_KEY_ID);
-  console.log('Secret Access Key:', process.env.REACT_APP_SECRET_ACCESS_KEY);
-    
+   
     const params = {
       Bucket: S3_BUCKET,
     };
@@ -47,6 +43,11 @@ const[loading , setloading]=useState(false)
   };
 
   useEffect(() => {
+      console.log('Bucket:', S3_BUCKET);
+  console.log('Region:', REGION);
+  console.log('Access Key ID:', process.env.REACT_APP_ACCESS_KEY_ID);
+  console.log('Secret Access Key:', process.env.REACT_APP_SECRET_ACCESS_KEY);
+    
     fetchFiles();
   }, []);
 
