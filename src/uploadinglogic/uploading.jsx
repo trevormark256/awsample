@@ -51,7 +51,6 @@ function Uploading() {
 const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
 const REGION = process.env.REACT_APP_REGION;
   
-   useEffect(() => {
   const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
   const REGION = process.env.REACT_APP_REGION;
 
@@ -60,11 +59,6 @@ const REGION = process.env.REACT_APP_REGION;
     secretAccessKey: process.env.REACT_APP_SECRET_ACCESS_KEY,
   });
 
-  console.log('Bucket:', S3_BUCKET);
-  console.log('Region:', REGION);
-  console.log('Access Key ID:', process.env.REACT_APP_ACCESS_KEY_ID);
-  console.log('Secret Access Key:', process.env.REACT_APP_SECRET_ACCESS_KEY);
-}, []);
 
   
     const folder = file.type.startsWith('image') ? 'images/' : 'videos/';
