@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AWS from 'aws-sdk';
-import S3 from 'aws-sdk/clients/s3';
-import { Table, Button } from 'react-bootstrap';
-import { Spinner } from 'react-bootstrap';
+import { Table, Button, Spinner } from 'react-bootstrap';
 
 const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
 const REGION = process.env.REACT_APP_REGION;
@@ -10,44 +8,35 @@ const REGION = process.env.REACT_APP_REGION;
 AWS.config.update({
   accessKeyId: process.env.REACT_APP_ACCESS_KEY_ID,
   secretAccessKey: process.env.REACT_APP_SECRET_ACCESS_KEY,
-
-});
-
-const s3 = new S3({
   region: REGION,
 });
+
+const s3 = new AWS.S3();
 
 function GetUploads() {
   const [files, setFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
-const[loading , setloading]=useState(false)
-
-
-  const fetchFiles = async () => {
-   
-    const params = {
-      Bucket: S3_BUCKET,
-    };
-
-    try {
-      setloading(true)
-      const data = await s3.listObjectsV2(params).promise();
-      setFiles(data.Contents);
-      setloading(false)
-    } catch (error) {
-      setloading(false)
-      console.error("Error fetching files: ", error);
-      setErrorMessage("Error fetching files: " + error.message);
-    }
-  };
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-      console.log('Bucket:', S3_BUCKET);
-  console.log('Region:', REGION);
-  console.log('Access Key ID:', process.env.REACT_APP_ACCESS_KEY_ID);
-  console.log('Secret Access Key:', process.env.REACT_APP_SECRET_ACCESS_KEY);
-    
+    const fetchFiles = async () => {
+      const params = {
+        Bucket: S3_BUCKET,
+      };
+
+      try {
+        setLoading(true);
+        const data = await s3.listObjectsV2(params).promise();
+        setFiles(data.Contents);
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        console.error("Error fetching files: ", error);
+        setErrorMessage("Error fetching files: " + error.message);
+      }
+    };
+
     fetchFiles();
   }, []);
 
@@ -89,42 +78,42 @@ const[loading , setloading]=useState(false)
           {errorMessage}
         </div>
       )}
-        {loading ? 
-          <><Spinner className='col-12' animation="border" size="sm" role="status">
-
-        </Spinner>
-        <br /></>
-
-            :
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>File Name</th>
-            <th>Select</th>
-          </tr>
-        </thead>
-        <tbody>
-          {files.map((file, index) => (
-            <tr key={file.Key}>
-              <td>{index + 1}</td>
-              <td>{file.Key}</td>
-              <td>
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id={file.Key}
-                  onChange={(event) => handleFileSelect(event, file.Key)}
-                />
-              </td>
+      {loading ? (
+        <div className="d-flex justify-content-center my-4">
+          <Spinner animation="border" role="status">
+            <span className="sr-only">Loading...</span>
+          </Spinner>
+        </div>
+      ) : (
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>File Name</th>
+              <th>Select</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
-      }
-      <button className="btn btn-secondary mt-2" onClick={downloadSelectedFiles} disabled={selectedFiles.length === 0}>
+          </thead>
+          <tbody>
+            {files.map((file, index) => (
+              <tr key={file.Key}>
+                <td>{index + 1}</td>
+                <td>{file.Key}</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id={file.Key}
+                    onChange={(event) => handleFileSelect(event, file.Key)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
+      <Button className="mt-2" onClick={downloadSelectedFiles} disabled={selectedFiles.length === 0}>
         Download Selected Files
-      </button>
+      </Button>
     </div>
   );
 }
