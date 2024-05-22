@@ -83,6 +83,7 @@ function GetUploads() {
           <Spinner animation="border" role="status">
            
           </Spinner>
+          <br/>
            <span className="sr-only">Loading...</span>
         </div>
       ) : (
