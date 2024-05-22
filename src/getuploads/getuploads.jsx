@@ -81,8 +81,9 @@ function GetUploads() {
       {loading ? (
         <div className="d-flex justify-content-center my-4">
           <Spinner animation="border" role="status">
-            <span className="sr-only">Loading...</span>
+           
           </Spinner>
+           <span className="sr-only">Loading...</span>
         </div>
       ) : (
         <Table striped bordered hover>
