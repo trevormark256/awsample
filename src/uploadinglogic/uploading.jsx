@@ -37,7 +37,7 @@ function Uploading() {
   };
 
   const validateFields = () => {
-    if (!file || !metadata.title || !metadata.description || !metadata.author) {
+    if (!file) {
         setwarning("Please fill in all fields before uploading.")
     
       return false;
