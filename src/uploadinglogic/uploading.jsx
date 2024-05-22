@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import AWS from 'aws-sdk';
-import S3 from 'aws-sdk/clients/s3';
 import { Spinner } from 'react-bootstrap';
 
 function Uploading() {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const[warning ,setwarning]=useState("")
+  const [warning, setWarning] = useState("");
   const [errorMessage, setErrorMessage] = useState('');
   const [metadata, setMetadata] = useState({ title: '', description: '', author: '' });
 
@@ -27,7 +26,7 @@ function Uploading() {
     if (allowedTypes.includes(selectedFile.type)) {
       setFile(selectedFile);
     } else {
-      alert('Invalid file type. Only images and videos are allowed.');
+      alert('Invalid file type. Only images, videos, audio, and PDFs are allowed.');
     }
   };
 
@@ -37,30 +36,29 @@ function Uploading() {
   };
 
   const validateFields = () => {
-    if (!file) {
-        setwarning("Please fill in all fields before uploading.")
-    
+    if (!file || !metadata.title || !metadata.description || !metadata.author) {
+      setWarning("Please fill in all fields before uploading.");
       return false;
     }
+    setWarning("");
     return true;
   };
+
   const uploadFile = async () => {
     if (!validateFields()) return;
     setUploading(true);
-   
-const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
-const REGION = process.env.REACT_APP_REGION;
-  
-  const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
-  const REGION = process.env.REACT_APP_REGION;
 
-  AWS.config.update({
-    accessKeyId: process.env.REACT_APP_ACCESS_KEY_ID,
-    secretAccessKey: process.env.REACT_APP_SECRET_ACCESS_KEY,
-  });
+    const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
+    const REGION = process.env.REACT_APP_REGION;
 
+    AWS.config.update({
+      accessKeyId: process.env.REACT_APP_ACCESS_KEY_ID,
+      secretAccessKey: process.env.REACT_APP_SECRET_ACCESS_KEY,
+      region: REGION,
+    });
 
-  
+    const s3 = new AWS.S3();
+
     const folder = file.type.startsWith('image') ? 'images/' : 'videos/';
     const timestamp = new Date().toISOString(); // Get current timestamp
     const params = {
@@ -74,7 +72,7 @@ const REGION = process.env.REACT_APP_REGION;
         timestamp: timestamp, // Include timestamp in metadata
       },
     };
-  
+
     try {
       const upload = await s3.putObject(params).promise();
       console.log(upload);
@@ -89,49 +87,42 @@ const REGION = process.env.REACT_APP_REGION;
       setErrorMessage("Error uploading file: " + error.message);
     }
   };
-  
 
   return (
-    <>
-      <div className="container mt-4">
+    <div className="container mt-4">
       {warning && (
-          <div className="alert alert-warning mt-2" role="alert">
-            {warning}
-          </div>
-        )}
-     
-        <input type="file" className='form-control' required onChange={handleFileChange} />
-        <div className="form-group mt-2">
-          <input type="text" required className="form-control" name="title" value={metadata.title} onChange={handleMetadataChange} placeholder="Title" />
+        <div className="alert alert-warning mt-2" role="alert">
+          {warning}
         </div>
-        <div className="form-group mt-2">
-          <textarea className="form-control" name="description" value={metadata.description} onChange={handleMetadataChange} placeholder="Description" rows="3"></textarea>
-        </div>
-        <div className="form-group mt-2">
-          <input type="text" required className="form-control" name="author" value={metadata.author} onChange={handleMetadataChange} placeholder="Author" />
-        </div>
-        <button className="btn btn-primary mt-2" onClick={uploadFile} disabled={uploading}>
-          {uploading ? (
-            <Spinner animation="border" size="sm" role="status">
-           
-            </Spinner>
-            
-          ) : (
-            'Upload File'
-          )}
-        </button>
-        {successMessage && (
-          <div className="alert alert-success mt-2" role="alert">
-            {successMessage}
-          </div>
-        )}
-        {errorMessage && (
-          <div className="alert alert-danger mt-2" role="alert">
-            {errorMessage}
-          </div>
-        )}
+      )}
+      <input type="file" className='form-control' required onChange={handleFileChange} />
+      <div className="form-group mt-2">
+        <input type="text" required className="form-control" name="title" value={metadata.title} onChange={handleMetadataChange} placeholder="Title" />
       </div>
-    </>
+      <div className="form-group mt-2">
+        <textarea className="form-control" name="description" value={metadata.description} onChange={handleMetadataChange} placeholder="Description" rows="3"></textarea>
+      </div>
+      <div className="form-group mt-2">
+        <input type="text" required className="form-control" name="author" value={metadata.author} onChange={handleMetadataChange} placeholder="Author" />
+      </div>
+      <button className="btn btn-primary mt-2" onClick={uploadFile} disabled={uploading}>
+        {uploading ? (
+          <Spinner animation="border" size="sm" role="status" />
+        ) : (
+          'Upload File'
+        )}
+      </button>
+      {successMessage && (
+        <div className="alert alert-success mt-2" role="alert">
+          {successMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="alert alert-danger mt-2" role="alert">
+          {errorMessage}
+        </div>
+      )}
+    </div>
   );
 }
 
