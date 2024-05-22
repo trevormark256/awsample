@@ -60,6 +60,11 @@ const REGION = process.env.REACT_APP_REGION;
       params: { Bucket: S3_BUCKET },
       region: REGION,
     });
+    
+console.log('Bucket:', S3_BUCKET);
+console.log('Region:', REGION);
+console.log('Access Key ID:', process.env.REACT_APP_AWS_ACCESS_KEY_ID);
+console.log('Secret Access Key:', process.env.REACT_APP_AWS_SECRET_ACCESS_KEY);
   
     const folder = file.type.startsWith('image') ? 'images/' : 'videos/';
     const timestamp = new Date().toISOString(); // Get current timestamp
