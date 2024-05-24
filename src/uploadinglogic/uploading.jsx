@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import AWS from 'aws-sdk';
+import { Storage } from 'aws-amplify';
 import { Spinner } from 'react-bootstrap';
 
 function Uploading() {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [warning, setWarning] = useState("");
+  const [warning, setWarning] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [metadata, setMetadata] = useState({ title: '', description: '', author: '' });
 
@@ -37,10 +37,10 @@ function Uploading() {
 
   const validateFields = () => {
     if (!file || !metadata.title || !metadata.description || !metadata.author) {
-      setWarning("Please fill in all fields before uploading.");
+      setWarning('Please fill in all fields before uploading.');
       return false;
     }
-    setWarning("");
+    setWarning('');
     return true;
   };
 
@@ -48,43 +48,30 @@ function Uploading() {
     if (!validateFields()) return;
     setUploading(true);
 
-    const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
-    const REGION = process.env.REACT_APP_REGION;
-
-    AWS.config.update({
-      accessKeyId: process.env.REACT_APP_ACCESS_KEY_ID,
-      secretAccessKey: process.env.REACT_APP_SECRET_ACCESS_KEY,
-      region: REGION,
-    });
-
-    const s3 = new AWS.S3();
-
     const folder = file.type.startsWith('image') ? 'images/' : 'videos/';
     const timestamp = new Date().toISOString(); // Get current timestamp
-    const params = {
-      Bucket: S3_BUCKET,
-      Key: folder + file.name,
-      Body: file,
-      Metadata: {
-        title: metadata.title,
-        description: metadata.description,
-        author: metadata.author,
-        timestamp: timestamp, // Include timestamp in metadata
-      },
-    };
+    const fileKey = `${folder}${file.name}`;
 
     try {
-      const upload = await s3.putObject(params).promise();
-      console.log(upload);
+      await Storage.put(fileKey, file, {
+        contentType: file.type,
+        metadata: {
+          title: metadata.title,
+          description: metadata.description,
+          author: metadata.author,
+          timestamp: timestamp, // Include timestamp in metadata
+        },
+      });
+
       setUploading(false);
-      setSuccessMessage("File uploaded successfully.");
+      setSuccessMessage('File uploaded successfully.');
       // Clear the fields after successful upload
       setFile(null);
       setMetadata({ title: '', description: '', author: '' });
     } catch (error) {
       console.error(error);
       setUploading(false);
-      setErrorMessage("Error uploading file: " + error.message);
+      setErrorMessage('Error uploading file: ' + error.message);
     }
   };
 
@@ -95,7 +82,7 @@ function Uploading() {
           {warning}
         </div>
       )}
-      <input type="file" className='form-control' required onChange={handleFileChange} />
+      <input type="file" className="form-control" required onChange={handleFileChange} />
       <div className="form-group mt-2">
         <input type="text" required className="form-control" name="title" value={metadata.title} onChange={handleMetadataChange} placeholder="Title" />
       </div>
@@ -107,7 +94,7 @@ function Uploading() {
       </div>
       <button className="btn btn-primary mt-2" onClick={uploadFile} disabled={uploading}>
         {uploading ? (
-          <Spinner animation="border" size="sm" role="status" />
+          <Spinner animation="border" className="bg-green" size="sm" role="status" />
         ) : (
           'Upload File'
         )}

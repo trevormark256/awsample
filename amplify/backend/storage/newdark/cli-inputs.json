@@ -1,0 +1,14 @@
+{
+  "resourceName": "newdark",
+  "policyUUID": "747faa38",
+  "bucketName": "newdarkstorage",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

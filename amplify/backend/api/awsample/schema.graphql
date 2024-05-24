@@ -1,0 +1,44 @@
+# This "input" configures a global authorization rule to enable public access to
+# all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
+input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
+
+input AMPLIFY {
+  globalAuthRule: AuthRule = { allow: public } # FOR TESTING ONLY!
+}
+
+type FileMetadata @model {
+  id: ID!
+  title: String!
+  description: String!
+  author: String!
+  fileKey: String!
+  timestamp: String!
+  tags: [String] # Adding tags field to store metadata tags associated with the file
+  size: Int # Adding size field to store the size of the file in bytes
+  url: String # Adding url field to store the URL or path to access the file
+  visibility: FileVisibility! # Adding visibility field to specify the visibility of the file
+}
+
+enum FileVisibility {
+  PUBLIC
+  PRIVATE
+  RESTRICTED
+}
+
+type Query {
+  getFileMetadata(id: ID!): FileMetadata # Adding a query to retrieve file metadata by ID
+}
+
+type Mutation {
+  updateFileMetadata(id: ID!, input: UpdateFileMetadataInput!): FileMetadata # Adding a mutation to update file metadata
+}
+
+input UpdateFileMetadataInput {
+  title: String
+  description: String
+  author: String
+  tags: [String]
+  size: Int
+  url: String
+  visibility: FileVisibility
+}

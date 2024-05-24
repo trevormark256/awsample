@@ -1,17 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import AWS from 'aws-sdk';
+import { Storage } from 'aws-amplify';
 import { Table, Button, Spinner } from 'react-bootstrap';
-
-const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
-const REGION = process.env.REACT_APP_REGION;
-
-AWS.config.update({
-  accessKeyId: process.env.REACT_APP_ACCESS_KEY_ID,
-  secretAccessKey: process.env.REACT_APP_SECRET_ACCESS_KEY,
-  region: REGION,
-});
-
-const s3 = new AWS.S3();
 
 function GetUploads() {
   const [files, setFiles] = useState([]);
@@ -21,14 +10,10 @@ function GetUploads() {
 
   useEffect(() => {
     const fetchFiles = async () => {
-      const params = {
-        Bucket: S3_BUCKET,
-      };
-
       try {
         setLoading(true);
-        const data = await s3.listObjectsV2(params).promise();
-        setFiles(data.Contents);
+        const fileKeys = await Storage.list('');
+        setFiles(fileKeys);
         setLoading(false);
       } catch (error) {
         setLoading(false);
@@ -48,26 +33,23 @@ function GetUploads() {
     }
   };
 
-  const downloadSelectedFiles = () => {
-    selectedFiles.forEach(async (fileKey) => {
-      const params = {
-        Bucket: S3_BUCKET,
-        Key: fileKey,
-      };
-
-      try {
-        const data = await s3.getObject(params).promise();
-        const url = window.URL.createObjectURL(new Blob([data.Body]));
+  const downloadSelectedFiles = async () => {
+    try {
+      setLoading(true);
+      await Promise.all(selectedFiles.map(async (fileKey) => {
+        const url = await Storage.get(fileKey);
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', fileKey);
         document.body.appendChild(link);
         link.click();
-      } catch (error) {
-        console.error("Error downloading file: ", error);
-        setErrorMessage("Error downloading file: " + error.message);
-      }
-    });
+      }));
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.error("Error downloading file: ", error);
+      setErrorMessage("Error downloading file: " + error.message);
+    }
   };
 
   return (
@@ -81,10 +63,8 @@ function GetUploads() {
       {loading ? (
         <div className="d-flex justify-content-center my-4">
           <Spinner animation="border" role="status">
-           
+            <span className="sr-only">Loading...</span>
           </Spinner>
-          <br/>
-           <span className="sr-only">Loading...</span>
         </div>
       ) : (
         <Table striped bordered hover>
@@ -97,15 +77,15 @@ function GetUploads() {
           </thead>
           <tbody>
             {files.map((file, index) => (
-              <tr key={file.Key}>
+              <tr key={file.key}>
                 <td>{index + 1}</td>
-                <td>{file.Key}</td>
+                <td>{file.key}</td>
                 <td>
                   <input
                     type="checkbox"
                     className="form-check-input"
-                    id={file.Key}
-                    onChange={(event) => handleFileSelect(event, file.Key)}
+                    id={file.key}
+                    onChange={(event) => handleFileSelect(event, file.key)}
                   />
                 </td>
               </tr>
